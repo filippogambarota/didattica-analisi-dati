@@ -8,3 +8,13 @@
 # Project Specific
 
 local/
+
+# Jeckyll
+
+_site/
+.jekyll-cache/
+.sass-cache/
+.jekyll-metadata
+
+.bundle/
+vendor/
