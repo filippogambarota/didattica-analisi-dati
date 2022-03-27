@@ -26,6 +26,7 @@ Il codice commentato con alcune aggiunte è disponibile a questo [link](didattic
 Il codice usato durante la lezione è nella cartella `didattica-2022/scripts/25-03-2022.R`
 
 - Recap su importazione dati
+    - per capire meglio i percorsi dei file ho creato un breve [video](https://youtu.be/MvdVqB5brZo)
 - Ricodificare variabili usando `ifelse()`
 - Esercizio 1.12
     - calcolare manualmente rango percentile
