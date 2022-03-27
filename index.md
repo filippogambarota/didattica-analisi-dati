@@ -18,3 +18,16 @@ L'eventuale materiale rilevante verrà aggiunto in questa pagina. Ricordo che so
 - Esercizi:
     - Esercizio 1.10
     - Esercizio 1.11
+
+### 25 Marzo 2022
+
+Il codice commentato con alcune aggiunte è disponibile a questo [link](didattica-2022/reports/di-25-03-2022.html). In questo codice ci sono delle cose più avanzate e che non avete mai visto. Sono semplicemente aggiunte o comunque utili alla spiegazione e non sono necessarie per affrontare o capire gli esercizi.
+
+Il codice usato durante la lezione è nella cartella `didattica-2022/scripts/25-03-2022.R`
+
+- Recap su importazione dati
+- Ricodificare variabili usando `ifelse()`
+- Esercizio 1.12
+    - calcolare manualmente rango percentile
+    - rapporto tra rango perceptile e percentili (esempi con `qnorm` e `pnorm`)
+    - boxplot
