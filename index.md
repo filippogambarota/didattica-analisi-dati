@@ -32,3 +32,11 @@ Il codice usato durante la lezione è nella cartella `didattica-2022/scripts/25-
     - calcolare manualmente rango percentile
     - rapporto tra rango perceptile e percentili (esempi con `qnorm` e `pnorm`)
     - boxplot
+
+### 01 Aprile 2022
+
+- In questa esercitazione abbiamo rivisto il funzionamento di `sample()` e `gtools::permutations()`.
+- Esercizio 2.4:
+    - funzione `apply()`
+    - ripasso del concetto di **distribuzione campionaria** e dell'**errore standard**
+    - un cenno alle funzioni personalizzate in R con l'esempio della funzione `uncorrected_var()`
