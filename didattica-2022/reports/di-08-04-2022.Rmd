@@ -1,0 +1,213 @@
+---
+title: "Didattica Integrativa"
+date: "2022-04-08"
+output: 
+    html_document:
+        toc: true
+        toc_float: true
+        self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.align = "center",
+                      dpi = 300,
+                      fig.retina = 2,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+```{r packages}
+library(heplots)
+```
+
+# Domande
+
+## $\eta^2$ e $\eta^2_p$ (parziale)
+
+La differenza tra $\eta^2$ e $\eta^2_p$ consiste principalmente del denominatore della formula. Nel primo caso la formula prevede:
+
+$$
+\eta^2 = \frac{SS_{effect}}{SS_{total}}
+$$
+Dove $SS$ è la somma dei quadrati (*sum of squares*) ovvero la devianza. Questo viene intepretato come la variabilità spiegata da un certo effetto. Un $\eta^2$ di 0.13 indica che un dato effetto spiega il 13% della variabilità totale. Proviamo a calcolarlo:
+
+```{r}
+# Creiamo dei dati fake per un disegno fattoriale 2x2
+dat <- expand.grid(
+    n = 1:10,
+    x1 = c("a", "b"),
+    x2 = c("c", "d", "e")
+)
+dat$y <- rnorm(nrow(dat)) # variabile dipendente
+head(dat)
+```
+
+Ora fittiamo il modello:
+
+```{r}
+fit <- lm(y ~ x1 * x2, data = dat)
+fita <- data.frame(anova(fit))
+fita
+```
+
+In questo caso abbiamo 3 effetti, il main effect di `x1`, il main effect di `x2` e l'interazione `x1:x2`. Se vogliamo calcolare $\eta^2$ dobbiamo dividere la `Sum Sq` di ogni effetto per il totale:
+
+```{r}
+fita$Sum.Sq[1:3] / sum(fita$Sum.Sq) # ogni effetto diviso il totale
+heplots::etasq(fit, partial = FALSE)
+```
+
+L'$\eta^2_p$ invece:
+
+$$
+\eta^2_p = \frac{SS_{effect}}{SS_{effect} + SS_{error}}
+$$
+Possiamo calcolarlo quindi:
+
+```{r}
+fita$Sum.Sq[1:3] / (fita$Sum.Sq[1:3] + fita$Sum.Sq[4]) # ogni effetto diviso il totale
+heplots::etasq(fit, partial = TRUE)
+```
+
+Dal punto di vista dell'utilizzo, la differenza principale riguarda comparare diversi studi. Come scrive Lakens (2013)^[https://www.frontiersin.org/articles/10.3389/fpsyg.2013.00863/full]:
+
+> Although $\eta^2$ is an efficient way to compare the sizes of effects within a study (given that every effect is interpreted in relation to the total variance, all $\eta^2$ from a single study sum to 100%), eta squared cannot easily be compared between studies, because the total variability in a study ($SS_{total}$) depends on the design of a study, and increases when additional variables are manipulated. Keppel (1991) has recommended partial eta squared ($\eta^2_p$) to improve the comparability of effect sizes between studies, which expresses the sum of squares of the effect in relation to the sum of squares of the effect and the sum of squares of the error associated with the effect. 
+
+# Esercizi - Inferenza
+
+Per questi esercizi è molto utile avere chiaro il funzionamento delle varie distribuzioni di probabilità implementate in R e delle loro funzioni associate. Ad esempio in R ci sono varie distribuzioni:
+
+- `norm`: La distribuzione normale
+- `t`: la distribuzione t di student
+- `binom`: la distribuzione binomiale
+
+Per ognuna di queste distirbuzioni ci sono le funzioni per calcolare varie proprietà o generare dati:
+
+- `r`: genera dati da una distribuzione e.g. `rnorm()`
+- `d`: calcola la densità di probabilità
+- `p`: calcola la probabilità cumulata dato un quantile
+- `q`: calcola il quantile associato ad una data probabilità cumulata
+
+Quando sappiamo i parametri che definiscono una distribuzione (e.g. *media* e *deviazione standard* per la distribuzione normale) possiamo utilizzare tutte queste funzioni:
+
+```{r}
+# genero 10 valori da una normale con media = 0 e sd = 1
+rnorm(n = 10, mean = 0, sd = 1)
+
+# calcolo la densità del valore 0
+dnorm(x = 0, mean = 0, sd = 1)
+
+# calcolo la probabilità cumulata fino al valore 0
+pnorm(q = 0, mean = 0, sd = 1)
+
+# calcolo il valore associato alla probabilità cumulata di 0.5
+qnorm(p = 0.5, mean = 0, sd = 1)
+```
+
+## Esercizio 3.2
+
+Una cosa utile è visualizzare la distribuzione di verosimiglianza (likelihood). Ad esempio nel caso della binomiale, definita per i parametri $p$ (probabilità di successo) e $n$ (numero di eventi) posso visualizzare la distribuzione usando `dbinom()`:
+
+```{r}
+nlanci <- 12
+nsuccessi <- 0:12 # tutti i possibili successi
+p <- 0.5
+lik <- dbinom(nsuccessi, nlanci, p)
+plot(lik, type = "h")
+points(lik, pch = 19)
+```
+
+Se cambiamo il parametro $p$ vediamo che la distribuzione sarà differente:
+
+```{r}
+p <- 0.2
+lik <- dbinom(nsuccessi, nlanci, p)
+plot(lik, type = "h")
+points(lik, pch = 19)
+```
+
+Nel caso in cui volessimo testare se una moneta è bilanciata (il lancio della moneta si modella come una distribuzione binomiale) ovvero $p_{testa} = 0.5$:
+
+- eseguiamo un esperimento: lanciamo 12 volte la moneta
+- registriamo il numero di teste
+- prendiamo una *decisione*
+
+La *decisione* ma sopratutto la *soglia decisionale* è assolutamente arbitraria. La soglia decisionale, meglio nota come $\alpha$ permette di fissare una soglia per la quale ci prendiamo il *rischio* di rifiutare l'ipotesi nulla.
+
+Ad esempio:
+
+- se su 12 lanci ottengo 10 teste, la moneta è bilanciata?
+- se su 12 lanci ottengo 6 teste, la moneta è bilanciata?
+
+Possiamo quindi calcolare la probabilità di ottenere un certo numero di teste o un numero di teste più estremo:
+
+```{r}
+# probabilità di ottenere 10 o più teste su 12 lanci se la probabilità di testa è 0.5
+pbinom(q = 10, size = 12, prob = 0.5, lower.tail = FALSE)
+```
+
+Come vedete, questo valore (che voi conoscete come *p-value*) ci permette di dire che ottenere 10 o più teste è *altamente improbabile* (ma non impossibile).
+Prendendo $\alpha = 0.05$, ogni volta che il nostro p-value è minore di $\alpha$ ci prendiamo il rischio di rifiutare l'ipotesi nulla, sapendo che possiamo sbagliarci $\alpha$ percento di volte ripetendo l'esperimento un numero elevato di volte.
+
+Vediamo il tutto usando la funzione `binom.test()`:
+
+```{r}
+binom.test(x = 10, n = 12, p = 0.5, alternative = "greater")
+```
+
+## Esercizio 3.3
+
+Lo stesso principio si può applicare a qualsiasi test statistico come il `t-test` o lo `z-test`.
+
+```{r}
+esami <- scan("../data/esame.txt")
+
+# calcolo media ed standard error
+se <- sd(esami)/sqrt(length(esami))
+mean_x <- mean(esami)
+
+# distribuzione campionaria della media
+curve(dnorm(x, 18, se), 12, 20)
+points(mean_x, 0, col = "red")
+```
+
+A questo punto, posso calcolare la probabilità di ottenere un risultato minore o uguale a $\bar x$ usando la funzione `pnorm()` (esattamente come prima con `pbinom()`):
+
+```{r}
+pnorm(q = mean_x, mean = 18, sd = se)
+```
+
+Come vedete è estremamente bassa, e ci suggerisce che il nostro risultato è altamente improbabile se la media vera da cui è stato estratto il nostro campione è 18.
+
+Se vogliamo fare formalmente il nostro test, possiamo usare la funzione `t-test` (ad 1 campione):
+
+```{r}
+t.test(esami, mu = 18, alternative = "less")
+```
+
+Il `t-test` si basa sulla statistica `t` calcolata nel caso ad un campione come:
+
+$$
+t = \frac{\bar x - x_{pop}}{\frac{\sigma_x}{\sqrt{n_x}}}
+$$
+Come per la media, possiamo visualizzare la distribuzione campionaria della statistica $t$ che viene definita in base ai gradi di libertà ($df = n_x - 1$)
+
+```{r}
+curve(dt(x, df = length(esami) - 1), -4,4)
+```
+
+Come vedete il nostro `t` osservato dal t-test molto improbabile considerando l'ipotesi nulla ed infatti il `p-value` è estremamente piccolo.
+
+
+
+
+
+
+
+
+
+
+
+
+
