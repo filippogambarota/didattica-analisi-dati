@@ -45,9 +45,19 @@ Il codice usato durante la lezione è nella cartella `didattica-2022/scripts/25-
 
 [Codici](didattica-2022/reports/di-08-04-2022.html) usati a lezione con commenti
 
-- Abbiamo rivisto la funzione `etasq()`. Nel codice commentato c'è l'approfodimento non chiarito in aula per la differenza tra $\eta^2$ ed $\eta^2_p$
+- Abbiamo rivisto la funzione `etasq()`. Nel codice commentato c'è l'approfodimento non chiarito in aula per la differenza tra eta quadro ed eta quadro parziale
 - Esercizio 3.2/Esercizio 3.3
     - le funzioni `d`, `p` e `q` per la distribuzione binomiale, normale e t di Student
     - ripasso dei concetti principali di inferenza, p-value e ipotesi nulla
     
+### 22 Aprile 2022
 
+- Esercizio 3.5
+    - ripasso formula di Bayes
+    - calcolo e intepretazione della posterior distribution
+- Esercizio 3.6
+    - creazione di dataframe
+    - funzione `tapply()`
+    - test di normalità ed omogeneità delle varianze
+    - intepretazione bayes factor e confronto con p-value
+    
