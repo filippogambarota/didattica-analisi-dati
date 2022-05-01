@@ -1,0 +1,170 @@
+---
+title: "Didattica Integrativa"
+date: "2022-04-29"
+output: 
+    html_document:
+        toc: true
+        toc_float: true
+        self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.align = "center",
+                      dpi = 300,
+                      fig.retina = 2,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+# Regressione Lineare
+
+In questa lezione abbiamo ripreso i punti fondamentali della regressione lineare semplice e multipla. Una volta chiari questi aspetti fondamentali tutte le applicazioni più avanzate non sono altro che estensioni del modello di base.
+
+Simuliamo dei dati (senza associazione lineare)
+
+```{r}
+y <- rnorm(100, mean = 0, sd = 1)
+x <- rnorm(100, mean = 0, sd = 1)
+plot(x, y)
+```
+
+Chiaramente non c'è un pattern di associazione. Calcoliamo la correlazione, fittiamo un modello e plottiamo la retta di regressione.
+
+```{r}
+plot(x, y, pch = 19)
+abline(lm(y ~ x), col = "red")
+abline(h = mean(y))
+```
+
+In rosso vediamo la retta di regressione e in nero la media di y. E' chiaro che le due rette non sono molto diverse suggerendo che la relazione con x non ci dia molta più informazione che la sola media di y.
+
+In termini di modello:
+
+```{r}
+fit <- lm(y ~ x) # modello con x
+fit0 <- lm(y ~ 1) # modello con sola intercetta (mean(y))
+fit
+fit0
+```
+
+## Quanti Parametri?
+
+Il numero dei parametri dipende da:
+
+- il tipo di predittori (numerici o categoriali)
+- il tipo di modello (regressione semplice, multipla, multilivello)
+
+Nel caso di una regressione lineare multipla con predittori numerici:
+
+- Intercetta
+- 1 parametro per ogni predittore numerico nella formula
+- Errore standard dei residui
+
+Nel caso di un modello `y ~ x1 + x2 + x3` abbiamo quindi 5 parametri stimati. Chiaramente nel caso di interazioni, ogni interazione aggiunge un parametro stimato.
+
+Nel caso di una regressione lineare multipla con predittori categoriali:
+
+- Intercetta
+- $k - 1$ parametri dove $k$ è il numero di modalità della variabile categoriale
+- Errore standard dei residui
+
+Nel caso di un modello `y ~ x1` dove `x1` è un fattore a 2 livelli abbiamo 3 parametri stimati.
+
+## Interpretazione Parametri
+
+L'aspetto più critico della regressione è l'intepretazione dei parametri. Questa permette di leggere chiaramente l'output del nostro modello. Possiamo individuare alcune regole generali:
+
+- `intercetta` = valore di y quando i valori dei predittori (x) sono a 0
+
+L'intepretazione dei parametri nella regressione dipende da:
+
+- tipo di variabili indipendenti (categoriali, numeriche)
+- nel caso di variabili categoriali, il tipo di contrasti^[Questo è un argomento abbastanza complesso e può generare molta confusione. L'idea generale è che per trattare variabili categoriali R ricodifica in variabili numeriche i nostri predittori. Questa ricodifica non è sempre uguale (e.g., dummy coding) diversi modi di impostare i contrasti cambiano il modo di intepretare i parametri. Il modello in termini di $R^2$ e altri parametri rimane sempre uguale] utilizzati.
+
+Nel caso di variabili numeriche, il coefficiente di regressione indica l'aumento in `y` quando aumentiamo di 1 unità in `x`. Chiaramente questo dipende dalla scala sia di `y` che di `x`. Ad esempio, se abbiamo 2 questionari di Ansia e Depressione dove il nostro modello `ansia ~ depressione`, per l'aumento di 1 nei punteggi di `depressione` abbiamo un certo aumento di `ansia` (il coefficiente stimato)
+
+Quando abbiamo più predittori, il coefficente viene intepretato come incremento di `y` per incremento unitario di `xi`, tenendo fissi gli altri predittori.
+
+Nel caso di variabili categoriali, il tutto è meno intuitivo. R di default utilizza il dummy coding (o treatment coding). Sostanzialmente per una variabile categoriale a $k$ livelli, vengono create $k - 1$ variabili numeriche binarie (0-1). Questo si può vedere usando il comando `model.matrix()` mostra quello che accade dentro al modello lineare:
+
+```{r}
+x1 <- rep(c("a", "b", "c", "d"), each = 25)
+fitc <- lm(y ~ x1) 
+mm <- data.frame(model.matrix(fitc))
+cbind(mm, x1)
+```
+
+In questo modo il primo livello viene preso come riferimento (**a**, `intercetta`) e tutti i parametri corrispondono alla differenza tra il livello 2 vs 1, 3 vs 1 etc.
+
+I test sui coefficienti che viene visualizzato con `summary()` non sono altro che `t-test` dove $H_0: \beta_i = 0$ e $H_1: \beta_i \neq 0$.
+
+Per disegni più complessi (più predittori, interazioni, etc.) la situazione è più complessa ma il principio è lo stesso.
+
+Alcuni consigli e considerazioni:
+
+- in generale, modelli migliori non sono sempre modelli più complessi. Una parte importante dell'analisi è intepretare in modo chiaro i parametri, cosa che viene molto difficile quando il modello è troppo complesso.
+- non sempre i coefficienti hanno un significato funzionale diretto. Ad esempio, l'intercetta non è sempre interessante da un punto di vista intepretativo. La cosa miglio è sempre guardare anche gli effetti `anova(fit)` ma sopratutto rappresentare graficamente il modello.
+- Se vogliamo comunque intepretare i parametri, sopratutto quelli categoriali, un buon esercizio è quello di calcolare le medie per ogni condizione del nostro dataset, e cercare di confrontare i parametri con le differenze che calcoliamo a mano.
+
+```{r}
+dat <- data.frame(y, x1)
+head(dat)
+aggregate(y ~ x1, data = dat, FUN = mean)
+```
+
+Ora confrontiamo questo con il modello:
+
+```{r}
+fitc
+```
+
+L'intercetta dovrebbe essere la media di `a`. `x1b` dovrebbe essere la differenza tra `b` e `a` e così via.
+
+## Tutto è una regressione lineare
+
+Un aspetto molto importante da capire è che tutto quello che abbiamo fatto fino ad ora (t-test, anova, etc.) fa parte della famiglia della regressione lineare. In particolare:
+
+- L'`anova` è un tipo di regressione dove i predittori sono solo categoriali. In caso di 1 predittore, i livelli sono > 2.
+- Il `t-test` è un tipo di `anova` (e quindi di regressione) dove è presente 1 solo parametro categoriale con 2 livelli.
+
+Creiamo un dataframe per fare un `t-test`:
+
+```{r}
+datt <- data.frame(
+    y = rnorm(100),
+    x = rep(c("a", "b"), each = 50)
+)
+
+head(datt)
+```
+
+Ora calcoliamo il `t-test` ma facciamo anche una regressione lineare:
+
+```{r}
+t.test(y ~ x, data = datt, var.equal = TRUE)
+summary(lm(y ~ x, data = datt))
+```
+In base a quello che abbiamo detto prima, l'intercetta è la media di `y` quando `x` = 0 (ovvero è `a`, il valore di riferimento). `xb` è la differenza tra `b` e `a`. Il test rappresenta il `t-test` sulla differenza tra `b` e `a`. Esattamente quello che fa il comando `t.test()`.
+
+Lo stesso vale per l'`anova`. Creiamo un dataset con `x` > 2 livelli:
+
+```{r}
+dataov <- data.frame(
+    y = rnorm(100),
+    x = rep(c("a", "b", "c", "d"), each = 25)
+)
+
+head(dataov)
+```
+
+Calcoliamo sia l'anova con il comando `aov` che `anova` sul modello fittato:
+
+```{r}
+summary(aov(y ~ x, data = dataov))
+anova(lm(y ~ x, data = dataov))
+```
+
+Come vedete i risultati sono identici.
+
+Per approfondire il fatto che tutto alla fine è una regressione questo è un ottimo riferimento https://lindeloev.github.io/tests-as-linear/.
