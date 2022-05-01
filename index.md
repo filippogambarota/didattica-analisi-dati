@@ -61,3 +61,12 @@ Il codice usato durante la lezione è nella cartella `didattica-2022/scripts/25-
     - test di normalità ed omogeneità delle varianze
     - intepretazione bayes factor e confronto con p-value
     
+### 29 Aprile 2022
+
+Il codice commentato con alcune aggiunte è disponibile a questo [link](didattica-2022/reports/di-29-04-2022)
+
+- Ripasso generale della regressione lineare:
+    - intepretare parametri con predittori numerici e categoriali (dummy coding)
+    - intepretare interazioni tra predittori categoriali
+    - intepretare l'output del modello
+    
